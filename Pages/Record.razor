@@ -1,0 +1,16 @@
+<div class="weva-component" @onkeydown="@OnKeyDown" @onkeyup="@OnKeyUp">
+    <VideoPlayer />
+</div>
+
+@code {
+    
+    protected void OnKeyDown(KeyboardEventArgs e)
+    {
+        Console.WriteLine($"OnKeyDown: [{e.Key}]");
+    }
+
+    protected void OnKeyUp(KeyboardEventArgs e)
+    {
+        Console.WriteLine($"OnKeyUp: [{e.Key}]");
+    }
+}

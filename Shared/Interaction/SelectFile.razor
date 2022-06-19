@@ -1,0 +1,85 @@
+@using System.Diagnostics
+@inject IJSRuntime JS
+@inject StateContainer StateContainer
+
+<MatThemeProvider Theme="@theme">
+    <MatButton Raised="true" OnClick="@TriggerFileSelect">
+        <div class="caption">@Label</div>
+    </MatButton>
+</MatThemeProvider>
+<InputFile style="display: none" id="@ID" OnChange="@OnChangeHandler" type="file" accept="@AcceptedFileTypes" />
+
+@if (loadingVideo && StateContainer.SelectedVideo == null){
+    <div class="weva-progressbar">
+        <MatThemeProvider Theme="@theme">
+            <MatProgressBar Indeterminate="true" />
+        </MatThemeProvider>
+    </div>
+}
+
+@code {
+    private MatTheme theme = new MatTheme { Primary = "#000000", Secondary = "#00AAAA", OnSecondary = "#FAFAAA" };
+    private bool loadingVideo = false;
+
+    [Parameter]
+    public string? Label { get; set; }
+    [Parameter]
+    public string? Icon { get; set; }
+    [Parameter]
+    public SelectedFileType ExpectedFileType { get; set; }
+
+    private string ID { get; } = Guid.NewGuid().ToString("N").Substring(24);
+
+    private string AcceptedFileTypes { 
+        get {
+            if(ExpectedFileType == SelectedFileType.Video)
+                return ".mp4,.avi,.webm,.ogg,.mov";
+            else if(ExpectedFileType == SelectedFileType.Data)
+                return ".json";
+            
+            return "";
+        } 
+    }
+
+    public async Task TriggerFileSelect(MouseEventArgs e)
+    {
+        await JS.InvokeVoidAsync("ClickElementById", ID);
+    }
+
+    protected async void OnChangeHandler(InputFileChangeEventArgs e) {
+        loadingVideo = true;
+        ResetStateContainer();
+        StateHasChanged();
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        await LoadFile(e.File);
+
+        loadingVideo = false;
+        stopwatch.Stop();
+        StateHasChanged();
+
+        Console.WriteLine($"Loaded {e.File.Name} in {stopwatch.Elapsed}");
+    }
+
+    protected void ResetStateContainer() {
+        StateContainer.SelectedVideo = null;
+    }
+
+    protected async Task LoadFile(IBrowserFile file) {
+        SelectedFile selectedFile = (ExpectedFileType == SelectedFileType.Data) ? new SelectedData(file) : new SelectedVideo(file);
+            
+        var fileSize = file.Size;
+        var buffer = new byte[fileSize];
+        await file.OpenReadStream(long.MaxValue).ReadAsync(buffer);
+        
+        string bufferOutput = Convert.ToBase64String(buffer);
+
+        string localUrl = await JS.InvokeAsync<string>("loadVideo", bufferOutput, selectedFile.ContentType);
+
+        StateContainer.SelectedVideo = new SelectedVideo(file) {
+            LocalUrl = localUrl
+        };
+    }
+}

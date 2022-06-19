@@ -1,0 +1,71 @@
+﻿@page "/"
+@inject IJSRuntime JS
+@implements IDisposable
+@inject StateContainer StateContainer
+
+<PageTitle>Weva</PageTitle>
+
+<SelectFilesActionbar />
+
+@if (StateContainer != null && StateContainer.SelectedVideo != null)
+{
+    <p>Selected File: <b>@StateContainer.SelectedVideo.Filename</b></p>   
+    <BlazoredVideo EventFired="OnEvent"
+            VideoEventOptions="options"
+            tabindex=0
+            class="w-100"
+            id="videoPlayer"
+            controls="controls">
+        <source src="@StateContainer.SelectedVideo.LocalUrl" type="video/mp4" />
+    </BlazoredVideo>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        LocalStorageManager.Init(JS);
+        StateContainer.OnChange += StateHasChanged;
+    }
+
+    private void ChangePropertyValue()
+    {
+        StateContainer.Property = "New value set in the State " +
+            $"Container Example component: {DateTime.Now}";
+    }
+
+    public void Dispose()
+    {
+        StateContainer.OnChange -= StateHasChanged;
+    }   
+     
+    void OnEvent(VideoEventData videoData)
+    {
+        videoState = videoData.State;
+
+        if(videoData.EventName == VideoEvents.Pause){
+            OnPause(videoState);
+        }
+        if(videoData.EventName == VideoEvents.LoadedMetadata){
+            OnLoadedMetadata(videoState);
+        }
+        
+        StateHasChanged();
+    }
+
+    protected Dictionary<VideoEvents, VideoStateOptions> options = VideoStateOptionsManager.GetOptions();
+    protected VideoState videoState = new VideoState();
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) 
+        {
+            await JS.InvokeVoidAsync("SetFocusToElementById", "videoPlayer");
+        }            
+    }  
+
+    void OnLoadedMetadata(VideoState videoState){
+        Console.WriteLine(videoState.Duration);
+    }
+    void OnPause(VideoState videoState){
+        Console.WriteLine(videoState.CurrentTime);
+    }
+}

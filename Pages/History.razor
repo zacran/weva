@@ -1,0 +1,44 @@
+@page "/history"
+
+@*  
+If history cookie exists for user, display past sessions & button to clear history
+If this does not exist, display a Welcome splash
+ *@
+
+<button @onclick="SaveCommand">Save</button>
+
+<button @onclick="ReadCommand">Read</button>
+
+<button @onclick="DeleteCommand">Delete</button>
+
+ @code {
+     
+     const string PREVIOUS_SESSION_HISTORY = "previousSessionHistory";
+     private Object previousSessionHistory = new Object();
+
+    protected override void OnInitialized()
+    {
+        previousSessionHistory = LocalStorageManager.Read(PREVIOUS_SESSION_HISTORY);
+    }
+
+    private async void SaveCommand()
+    {
+        var previousSessionHistory = new List<string>();
+        previousSessionHistory.Add("first thing");
+
+        await LocalStorageManager.Save(PREVIOUS_SESSION_HISTORY, previousSessionHistory);
+    }
+
+    private async void ReadCommand()
+    {
+        var previousSessionHistory = await LocalStorageManager.Read(PREVIOUS_SESSION_HISTORY);
+        Console.WriteLine(JsonSerializer.Serialize(previousSessionHistory));
+    }
+
+    private async void DeleteCommand()
+    {
+        await LocalStorageManager.Delete(PREVIOUS_SESSION_HISTORY);
+        var previousSessionHistory = await LocalStorageManager.Read(PREVIOUS_SESSION_HISTORY);
+        Console.WriteLine(JsonSerializer.Serialize(previousSessionHistory));
+    }
+ }

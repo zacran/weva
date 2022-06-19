@@ -1,0 +1,32 @@
+
+
+
+<button @onclick="OnClick">Save</button>
+<div class="figure-caption">No data or files are transferred. Everything remains in your browser.</div>
+@* <SelectFile 
+    Label="test" 
+    FileContent="@FileContent" 
+    AcceptedFileTypes=".mp4,.avi,.webm,.ogg,.mov" 
+    OnFileSelect="@LoadFiles"
+/> *@
+
+@if (FileContent is not null)
+{
+    <div>
+        <img src="@FileContent" />
+    </div>
+}
+
+@code {
+    private Object? FileContent = null;
+
+    public void OnClick(){
+        Console.WriteLine(JsonSerializer.Serialize(FileContent));
+    }
+
+    public void LoadFiles()
+    {
+        Console.WriteLine("Uploading file");
+    }
+
+}

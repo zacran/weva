@@ -1,0 +1,55 @@
+@inject IJSRuntime JS
+
+@* <BlazoredVideo EventFired="OnEvent"
+        VideoEventOptions="options"
+        tabindex=0
+        class="w-100"
+        id="videoPlayer"
+        controls="controls">
+    <source src="@VideoSrc" type="video/mp4" />
+</BlazoredVideo> *@
+
+<BlazoredVideo EventFired="OnEvent"
+        VideoEventOptions="options"
+        tabindex=0
+        class="w-100"
+        id="videoPlayer"
+        controls="controls">
+    <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+</BlazoredVideo>
+
+@code {
+
+    [Parameter]
+    public string? VideoSrc { get; set; }
+    protected Dictionary<VideoEvents, VideoStateOptions> options = VideoStateOptionsManager.GetOptions();
+    protected VideoState videoState = new VideoState();
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) 
+        {
+            await JS.InvokeVoidAsync("SetFocusToElementById", "videoPlayer");
+        }            
+    }  
+
+    void OnEvent(VideoEventData videoData)
+    {
+        videoState = videoData.State;
+
+        if(videoData.EventName == VideoEvents.Pause){
+            OnPause(videoState);
+        }
+        if(videoData.EventName == VideoEvents.LoadedMetadata){
+            OnLoadedMetadata(videoState);
+        }
+        
+        StateHasChanged();
+    }
+
+    void OnLoadedMetadata(VideoState videoState){
+        Console.WriteLine(videoState.Duration);
+    }
+    void OnPause(VideoState videoState){
+        Console.WriteLine(videoState.CurrentTime);
+    }
+}

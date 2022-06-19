@@ -1,0 +1,7 @@
+.mat-file-upload {
+  padding: 1rem;
+}
+
+.mat-file-upload-content .material-icons {
+  display: none;
+}
