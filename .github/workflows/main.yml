@@ -18,17 +18,33 @@ jobs:
       - name: Install ffmpeg
         run: sudo apt-get install -y ffmpeg
 
-      # sets up .NET Core
+      # Install .NET Core
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v2.1.0
         with:
           dotnet-version: 6.0.*
 
+      # Checkout branch
       - uses: actions/checkout@v2.4.2
 
+      # Publish application
       - name: Publish with dotnet
         run: dotnet publish --configuration Release --output build
 
+      # Fixes for hosting BlazorWASM
+      - name: Change base-tag in index.html from / to weva
+        run: sed -i 's/<base href="\/" \/>/<base href="\/weva\/" \/>/g' release/wwwroot/index.html
+      - name: copy index.html to 404.html
+        run: cp release/wwwroot/index.html release/wwwroot/404.html
+      # Allow files and folders starting with an underscore
+      - name: Add .nojekyll file
+        run: touch release/wwwroot/.nojekyll
+
+      # Move FFMPEG to static assets folder
+      - name: Move FFPMEG binary to wwwroot
+        run: sudo mkdir build/wwwroot/ffmpeg && cp $(which ffmpeg) build/wwwroot/ffmpeg
+
+      # Deploy to GH Pages
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:

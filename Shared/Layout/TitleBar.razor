@@ -1,4 +1,13 @@
+@using System.Reflection
 <div class="weva-component">
     <h1>Weva</h1>
     <div>Web Video Analysis</div>
+    <div>@GetVersion()</div>
 </div>
+
+@code {
+    private Version? version = typeof(Program).Assembly.GetName()?.Version;
+    public string GetVersion(){
+        return $"v{Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute> ().InformationalVersion}";
+    }
+}
