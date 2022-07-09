@@ -8,6 +8,6 @@
 @code {
     private Version? version = typeof(Program).Assembly.GetName()?.Version;
     public string GetVersion(){
-        return $"v{Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute> ().InformationalVersion}";
+        return $"v{Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute> ()?.InformationalVersion}";
     }
 }

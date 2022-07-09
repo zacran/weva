@@ -42,7 +42,7 @@ jobs:
 
       # Move FFMPEG to static assets folder
       - name: Move FFPMEG binary to wwwroot
-        run: sudo mkdir build/wwwroot/ffmpeg && cp $(which ffmpeg) build/wwwroot/ffmpeg
+        run: sudo mkdir build/wwwroot/ffmpeg && sudo cp $(which ffmpeg) build/wwwroot/ffmpeg
 
       # Deploy to GH Pages
       - name: Deploy 🚀
